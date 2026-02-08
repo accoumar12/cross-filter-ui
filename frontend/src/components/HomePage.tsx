@@ -2,7 +2,7 @@
  * Home page component for database upload or playground access.
  */
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { uploadDatabase } from "../lib/api";
 import type { UploadResponse } from "../lib/api";
@@ -15,7 +15,25 @@ export function HomePage() {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isHighlighted, setIsHighlighted] = useState(false);
   const activityIconRef = useRef<ActivityIconHandle>(null);
+  const playgroundButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (window.location.hash === "#playground-button") {
+      setIsHighlighted(true);
+      playgroundButtonRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+
+      const timer = setTimeout(() => {
+        setIsHighlighted(false);
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
@@ -89,8 +107,21 @@ export function HomePage() {
   };
 
   return (
-    <div
-      style={{
+    <>
+      <style>
+        {`
+          @keyframes pulse {
+            0%, 100% {
+              transform: scale(1);
+            }
+            50% {
+              transform: scale(1.02);
+            }
+          }
+        `}
+      </style>
+      <div
+        style={{
         minHeight: "100vh",
         display: "flex",
         alignItems: "center",
@@ -398,6 +429,8 @@ export function HomePage() {
 
             {/* Playground button */}
             <button
+              id="playground-button"
+              ref={playgroundButtonRef}
               onClick={handlePlayground}
               style={{
                 width: "100%",
@@ -410,6 +443,10 @@ export function HomePage() {
                 fontWeight: "600",
                 cursor: "pointer",
                 transition: "all 0.2s",
+                boxShadow: isHighlighted
+                  ? "0 0 0 4px rgba(59, 130, 246, 0.5), 0 0 20px rgba(59, 130, 246, 0.4)"
+                  : "none",
+                animation: isHighlighted ? "pulse 1.5s ease-in-out infinite" : "none",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = "#f9fafb";
@@ -467,5 +504,6 @@ export function HomePage() {
         <span>Uptime monitor</span>
       </a>
     </div>
+    </>
   );
 }
