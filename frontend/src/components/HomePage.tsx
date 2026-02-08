@@ -398,6 +398,7 @@ export function HomePage() {
 
             {/* Playground button */}
             <button
+              id="playground-button"
               onClick={handlePlayground}
               style={{
                 width: "100%",
